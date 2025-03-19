@@ -1,63 +1,173 @@
-# Intermittent Time Series Prediction Model
+# UR2CUTE
 
-## Overview
-
-UR2CUTE : Using Repetitively 2 CNN for Unsteady Timeseries Estimation
-
-This repository contains a Python-based machine learning model for time series prediction, designed explicitly for intermittent time series. It leverages TensorFlow and other data processing libraries for effective forecasting.
-two models separately are being trained
-a classifier to learn the intervals of the time-series
-a regressor to learn the amount of the time-series
-
-in both cases, a convolutional neural network is used with different loss functions ( one for classifier, one for regressor)
-the classifier works as a mask with 1 and 0 that represent the existence of a demand, and it filters out the regressor output.
-
-![Abstract architecture of the model](plot.jpg).
-## Requirements
-- Python 3.x
-- Pandas
-- TensorFlow
-- NumPy
-- scikit-learn
+**Using Repetitively 2 CNNs for Unsteady Timeseries Estimation**
 
 
-## Installation
-Clone the repository and install the required packages.
 
-## Usage
+UR2CUTE is a specialized forecasting model designed for intermittent time series data. By employing a dual CNN approach, it effectively addresses the challenges of predicting both the occurrence and magnitude of demand in irregular time series patterns.
 
-### Data Preparation
-Your dataset should be in a Pandas DataFrame format with at least two columns: one for dates and one for the target variable (the quantity you want to predict). The date column should be in a format that Pandas can recognize as a date.
+## 📋 Overview
 
-### Date frequency
-It is assumed that the data has a weekly pattern, and for that reason, aggregate_weekly resample the data in a weekly manner
-you can change it based on your data frequency or remove it.
+Intermittent demand forecasting presents unique challenges due to irregular and unpredictable demand patterns, characterized by periods of zero demand followed by random non-zero demand. Traditional forecasting methods often perform poorly on such data.
 
+UR2CUTE employs a two-step approach:
+1. A CNN-based classification model predicts demand occurrence (zero vs. non-zero)
+2. A CNN-based regression model estimates the magnitude of demand
 
-### Model Training and Prediction
-Import the model script and use the `ur2cute_split_deep` function to train the model and make predictions.
-For the better results, it is recommended to use hyperparameter tunning techniques with Optuna or your method of choice. 
+This dual-phase approach significantly improves forecasting accuracy for intermittent demand, particularly in predicting periods of zero demand.
+
+## 🔍 Features
+
+- **Two-Step Prediction Process**: Separate models for order occurrence and quantity prediction
+- **Temporal Pattern Recognition**: CNNs effectively capture temporal patterns in intermittent data
+- **Lag Feature Generation**: Automatically creates lagged features to capture historical dependencies
+- **Combined Loss Function**: Custom loss functions optimized for each prediction task
+- **Sklearn Compatibility**: Follows scikit-learn API conventions for easy integration
+- **Direct Multi-Step Forecasting**: Predicts multiple future time steps in one pass
+
+## 🛠️ Installation
+
+```bash
+pip install fh_prevail
+```
+
+Then import the model:
+
+```python
+from fh_prevail.models import UR2CUTE
+```
+
+## 📊 Quick Start
 
 ```python
 import pandas as pd
-from ur2cute_v2 import ur2cute_split_deep #or simply copy paste the function and libraries :)
+from fh_prevail.models import UR2CUTE
 
-# Load your data
-# Ensure your data is in a pandas DataFrame with a date column and a target column
-data = pd.read_csv('path_to_your_data.csv')
+# Load time series data
+df = pd.DataFrame({
+    'date': pd.date_range('2023-01-01', periods=50, freq='W'),
+    'target': [0, 5, 0, 0, 12, 0, 0, 0, 7, 0, ...],  # Intermittent data
+    'feat1': [...],  # Optional external features
+    'feat2': [...]   # Optional external features
+})
 
-# Define the date column and the target column names
-date_column = 'your_date_column_name'
-target_column = 'your_target_column_name'
+# Initialize model
+model = UR2CUTE(
+    n_steps_lag=3,
+    forecast_horizon=4,
+    external_features=['feat1', 'feat2']
+)
 
-# Use the model function
-# The function returns the predicted quantities
-predicted_quantities = ur2cute_split_deep(data, date_column, target_column, lag_features=4, epochs=200, batch_size=32, val_patience=20, split_ratio=0.9, norm=False)
+# Fit model
+model.fit(df, target_col='target')
 
-# Output the predictions
-print(predicted_quantities)
+# Make predictions for the next forecast_horizon steps
+predictions = model.predict(df)
+print("Predicted values:", predictions)
 ```
 
-## Contributing
-Contributions to improve this model are welcome. Please submit pull requests or open an issue to discuss proposed changes.
+## 🔧 Parameters
 
+| Parameter | Description | Default |
+|-----------|-------------|---------|
+| `n_steps_lag` | Number of lag features to generate | 3 |
+| `forecast_horizon` | Number of future steps to predict | 8 |
+| `external_features` | List of column names for external features | None |
+| `epochs` | Training epochs for both CNN models | 100 |
+| `batch_size` | Batch size for training | 32 |
+| `threshold` | Probability threshold for classifying zero vs. non-zero | 0.5 |
+| `patience` | Patience for EarlyStopping | 10 |
+| `random_seed` | Random seed for reproducibility | 42 |
+| `classification_lr` | Learning rate for classification model | 0.0021 |
+| `regression_lr` | Learning rate for regression model | 0.0021 |
+| `dropout_classification` | Dropout rate for classification model | 0.4 |
+| `dropout_regression` | Dropout rate for regression model | 0.2 |
+
+## 📝 Methods
+
+### fit(df, target_col)
+
+Fits the UR2CUTE model on the time series data.
+
+**Parameters:**
+- `df` (pandas.DataFrame): Time series data with at least the target column. Must be sorted by time.
+- `target_col` (str): The name of the column to forecast.
+
+**Returns:**
+- The fitted UR2CUTE model instance.
+
+### predict(df)
+
+Predicts the next `forecast_horizon` steps from the input DataFrame.
+
+**Parameters:**
+- `df` (pandas.DataFrame): Time series data with the same columns as used in fit(). Must be sorted by time.
+
+**Returns:**
+- numpy.ndarray: The predictions for each step in the horizon.
+
+## 🔍 How It Works
+
+1. **Data Preprocessing**:
+   - Aggregates demand data (e.g., daily to weekly)
+   - Generates lag features to capture historical patterns
+
+2. **Model Architecture**:
+   - **Classification Model**: CNN that predicts probability of non-zero demand
+   - **Regression Model**: CNN that predicts quantity when demand exists
+
+3. **Prediction Process**:
+   - Classification model predicts if demand will occur
+   - Regression model predicts the magnitude of demand
+   - Final prediction combines both models' outputs
+
+## 🏆 Performance
+
+UR2CUTE outperforms traditional forecasting techniques including:
+- Croston's method
+- XGBoost
+- Random Forest
+- ETR
+- Prophet
+- AutoARIMA
+
+Particularly for predicting intermittent demand, UR2CUTE shows significant improvements in:
+- Mean Absolute Error % (MAE%)
+- Root Mean Square Error % (RMSE%)
+- R-squared values
+
+## 📚 Citation
+
+If you use UR2CUTE in your research, please cite:
+
+```
+@article{mirshahi2024intermittent,
+  title={Intermittent Time Series Demand Forecasting Using Dual Convolutional Neural Networks},
+  author={Mirshahi, Sina and Brandtner, Patrick and Kom{\'i}nkov{\'a} Oplatkov{\'a}, Zuzana},
+  journal={MENDEL — Soft Computing Journal},
+  volume={30},
+  number={1},
+  year={2024},
+  publisher={MENDEL Journal}
+}
+```
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👥 Contributors
+
+- Sina Mirshahi
+- Patrick Brandtner
+- Zuzana Komínková Oplatková
+- Taha Falatouri
+- Mehran Naseri
+- Farzaneh Darbanian
+
+## 🙏 Acknowledgments
+
+This research was conducted at:
+- Department of Informatics and Artificial Intelligence, Tomas Bata
+- Department for Logistics, University of Applied Sciences Upper Austria, Steyr
+- Josef Ressel-Centre for Predictive Value Network Intelligence, Steyr
