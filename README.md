@@ -2,9 +2,7 @@
 
 **Using Repetitively 2 CNNs for Unsteady Timeseries Estimation**
 
-
-
-UR2CUTE is a specialized forecasting model designed for intermittent time series data. By employing a dual CNN approach, it effectively addresses the challenges of predicting both the occurrence and magnitude of demand in irregular time series patterns.
+UR2CUTE is a specialized forecasting model designed for intermittent time series data. By employing a dual CNN approach with PyTorch, it effectively addresses the challenges of predicting both the occurrence and magnitude of demand in irregular time series patterns.
 
 ## 📋 Overview
 
@@ -18,12 +16,21 @@ This dual-phase approach significantly improves forecasting accuracy for intermi
 
 ## 🔍 Features
 
+- **PyTorch Implementation**: Uses PyTorch's efficient tensor operations and GPU acceleration
 - **Two-Step Prediction Process**: Separate models for order occurrence and quantity prediction
 - **Temporal Pattern Recognition**: CNNs effectively capture temporal patterns in intermittent data
 - **Lag Feature Generation**: Automatically creates lagged features to capture historical dependencies
 - **Combined Loss Function**: Custom loss functions optimized for each prediction task
 - **Sklearn Compatibility**: Follows scikit-learn API conventions for easy integration
 - **Direct Multi-Step Forecasting**: Predicts multiple future time steps in one pass
+
+## 📦 Dependencies
+
+- Python 3.7+
+- PyTorch 1.7+
+- NumPy
+- pandas
+- scikit-learn
 
 ## 🛠️ Installation
 
@@ -64,24 +71,31 @@ model.fit(df, target_col='target')
 # Make predictions for the next forecast_horizon steps
 predictions = model.predict(df)
 print("Predicted values:", predictions)
+
+# Note: The model automatically uses GPU if available
+# To manually control device placement:
+# import torch
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# print(f"Using device: {device}")
 ```
 
 ## 🔧 Parameters
 
-| Parameter | Description | Default |
-|-----------|-------------|---------|
-| `n_steps_lag` | Number of lag features to generate | 3 |
-| `forecast_horizon` | Number of future steps to predict | 8 |
-| `external_features` | List of column names for external features | None |
-| `epochs` | Training epochs for both CNN models | 100 |
-| `batch_size` | Batch size for training | 32 |
-| `threshold` | Probability threshold for classifying zero vs. non-zero | 0.5 |
-| `patience` | Patience for EarlyStopping | 10 |
-| `random_seed` | Random seed for reproducibility | 42 |
-| `classification_lr` | Learning rate for classification model | 0.0021 |
-| `regression_lr` | Learning rate for regression model | 0.0021 |
-| `dropout_classification` | Dropout rate for classification model | 0.4 |
-| `dropout_regression` | Dropout rate for regression model | 0.2 |
+| Parameter                | Description                                                                                                                                   | Default |
+|--------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| `n_steps_lag`            | Number of lag features to generate                                                                                                            | 3       |
+| `forecast_horizon`       | Number of future steps to predict                                                                                                             | 8       |
+| `external_features`      | List of column names for external features                                                                                                    | None    |
+| `epochs`                 | Training epochs for both CNN models                                                                                                           | 100     |
+| `batch_size`             | Batch size for training                                                                                                                       | 32      |
+| `threshold`              | Probability threshold for classifying zero vs. non-zero. Can be a float or `"auto"` to automatically compute the threshold from training targets | 0.5     |
+| `patience`               | Patience for EarlyStopping                                                                                                                    | 10      |
+| `random_seed`            | Random seed for reproducibility                                                                                                               | 42      |
+| `classification_lr`      | Learning rate for classification model                                                                                                        | 0.0021  |
+| `regression_lr`          | Learning rate for regression model                                                                                                            | 0.0021  |
+| `dropout_classification` | Dropout rate for classification model                                                                                                         | 0.4     |
+| `dropout_regression`     | Dropout rate for regression model                                                                                                             | 0.2     |
+
 
 ## 📝 Methods
 
