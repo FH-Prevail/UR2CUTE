@@ -2,7 +2,7 @@
 
 **Using Repetitively 2 CNNs for Unsteady Timeseries Estimation**
 
-UR2CUTE is a specialized forecasting model designed for intermittent time series data. By employing a dual CNN approach with PyTorch, it effectively addresses the challenges of predicting both the occurrence and magnitude of demand in irregular time series patterns.
+UR2CUTE is a specialized forecasting model designed for intermittent time series data. By employing a dual CNN approach with TensorFlow, it effectively addresses the challenges of predicting both the occurrence and magnitude of demand in irregular time series patterns.
 
 ## 📋 Overview
 
@@ -16,7 +16,7 @@ This dual-phase approach significantly improves forecasting accuracy for intermi
 
 ## 🔍 Features
 
-- **PyTorch Implementation**: Uses PyTorch's efficient tensor operations and GPU acceleration
+- **TensorFlow Implementation**: Uses TensorFlow's efficient tensor operations and GPU acceleration
 - **Two-Step Prediction Process**: Separate models for order occurrence and quantity prediction
 - **Temporal Pattern Recognition**: CNNs effectively capture temporal patterns in intermittent data
 - **Lag Feature Generation**: Automatically creates lagged features to capture historical dependencies
@@ -27,7 +27,7 @@ This dual-phase approach significantly improves forecasting accuracy for intermi
 ## 📦 Dependencies
 
 - Python 3.7+
-- PyTorch 1.7+
+- TensorFlow 2.x
 - NumPy
 - pandas
 - scikit-learn
@@ -74,8 +74,8 @@ print("Predicted values:", predictions)
 
 # Note: The model automatically uses GPU if available
 # To manually control device placement:
-# import torch
-# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# import tensorflow as tf
+# device = tf.device("cuda" if tf.test.is_gpu_available() else "cpu")
 # print(f"Using device: {device}")
 ```
 
